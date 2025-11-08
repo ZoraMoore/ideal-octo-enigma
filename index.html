@@ -18,7 +18,7 @@
     <!-- 自定义样式 -->
     <style>
         :root {
-            --accent: #3b82f6;
+            --accent: #888888;
         }
         
         html {
@@ -40,7 +40,7 @@
         /* 深色模式适配 */
         @media (prefers-color-scheme: dark) {
             :root {
-                --accent: #60a5fa;
+                --accent: #bbbbbb;
             }
         }
 
@@ -62,13 +62,14 @@
         }
 
         /* 应用到body的动态渐变背景 */
+        /* 灰度动态渐变背景 */
         body {
             background: linear-gradient(
                 45deg,
-                #1a2a6c,
-                #b21f1f,
-                #fdbb2d,
-                #1a2a6c
+                #222222,
+                #555555,
+                #aaaaaa,
+                #222222
             );
             background-size: 400% 400%;
             animation: gradientShift 30s ease infinite;
@@ -76,26 +77,28 @@
         }
 
         /* 深色模式下的渐变调整 */
+        /* 深色灰度动态渐变背景 */
         body.dark {
             background: linear-gradient(
                 45deg,
-                #0a1a3c,
-                #7a0f0f,
-                #cd9b1d,
-                #0a1a3c
+                #000000,
+                #222222,
+                #444444,
+                #000000
             );
             background-size: 400% 400%;
             animation: gradientShift 30s ease infinite;
         }
 
         /* 光标辉光的默认样式 */
+        /* 灰度光标辉光 */
         #cursorGlow {
             width: 400px;
             height: 400px;
             background: radial-gradient(
                 circle,
-                rgba(100, 100, 255, 0.15) 0%,
-                rgba(100, 100, 255, 0.05) 40%,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.03) 40%,
                 transparent 70%
             );
             transform: translate(-50%, -50%);
@@ -104,21 +107,22 @@
         }
 
         /* 光标辉光悬停状态 */
+        /* 灰度光标辉光 (悬停) */
         #cursorGlow.hover {
             width: 600px;
             height: 600px;
             background: radial-gradient(
                 circle,
-                rgba(150, 100, 255, 0.35) 0%,
-                rgba(150, 100, 255, 0.15) 40%,
+                rgba(255, 255, 255, 0.2) 0%,
+                rgba(255, 255, 255, 0.1) 40%,
                 transparent 70%
             );
         }
 
         /* 可交互元素在辉光悬停时的文字颜色变化 */
         .glow-lit {
-            color: rgba(200, 150, 255, 1) !important;
-            text-shadow: 0 0 20px rgba(150, 100, 255, 0.8);
+            color: rgba(255, 255, 255, 1) !important;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
             transition: all 0.3s ease;
         }
 
@@ -224,25 +228,18 @@
                 </div>
                 
                 <div>
-                    <h3 class="text-xl font-semibold mb-4">个人特质</h3>
-                    <ul class="space-y-3 text-gray-600 dark:text-gray-300">
-                        <li class="flex items-start">
-                            <span class="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                            对AI技术充满好奇，富有探索精神
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                            善于分析问题并提出切实可行的解决方案
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                            良好的团队协作和沟通能力
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                            对未知事物充满好奇，富有探索精神
-                        </li>
-                    </ul>
+                    <h3 class="text-xl font-semibold mb-4">个人风采</h3>
+                    <video
+                        src="dragonfly_1.mp4"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        aria-label="个人风采视频"
+                        class="w-full h-auto rounded-lg shadow-lg aspect-video object-cover bg-gray-50 dark:bg-gray-800"
+                    >
+                        你的浏览器不支持播放此视频。
+                    </video>
                 </div>
             </div>
         </section>
@@ -590,11 +587,11 @@
             ctx.lineTo(centerX - 25, centerY);
             ctx.closePath();
 
-            // 创建蓝粉色渐变填充
+            // 创建灰度渐变填充
             const gradient = ctx.createLinearGradient(centerX - 25, centerY, centerX + 25, centerY + 50);
-            gradient.addColorStop(0, '#A8D8FF');    // 浅蓝色
-            gradient.addColorStop(0.5, '#C8B6FF');  // 淡紫色
-            gradient.addColorStop(1, '#FFB6D9');    // 粉色
+            gradient.addColorStop(0, '#E5E7EB');    // 浅灰
+            gradient.addColorStop(0.5, '#9CA3AF');  // 中灰
+            gradient.addColorStop(1, '#4B5563');    // 深灰
 
             ctx.fillStyle = gradient;
             ctx.fill();
