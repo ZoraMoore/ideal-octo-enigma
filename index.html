@@ -63,13 +63,13 @@
 
         /* Body 基础样式 (渐变已移至 #header-gradient-bg) */
         body {
-            background-color: #111111; /* 纯色背景，防止视频加载失败 */
+            background-color: transparent; /* 透明背景，显示视频和粒子 */
             position: relative;
         }
 
         /* 深色模式下的 body */
         body.dark {
-            background-color: #000000;
+            background-color: transparent;
         }
 
         /* 光标辉光的默认样式 */
@@ -188,7 +188,7 @@
     </script>
 </head>
 
-<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
+<body class="text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
     <!-- ============================================ -->
     <!-- 背景层系统：视频 + 渐变 + 粒子 -->
     <!-- ============================================ -->
