@@ -61,33 +61,15 @@
             }
         }
 
-        /* 应用到body的动态渐变背景 */
-        /* 灰度动态渐变背景 */
+        /* Body 基础样式 (渐变已移至 #header-gradient-bg) */
         body {
-            background: linear-gradient(
-                45deg,
-                #222222,
-                #555555,
-                #aaaaaa,
-                #222222
-            );
-            background-size: 400% 400%;
-            animation: gradientShift 30s ease infinite;
+            background-color: #111111; /* 纯色背景，防止视频加载失败 */
             position: relative;
         }
 
-        /* 深色模式下的渐变调整 */
-        /* 深色灰度动态渐变背景 */
+        /* 深色模式下的 body */
         body.dark {
-            background: linear-gradient(
-                45deg,
-                #000000,
-                #222222,
-                #444444,
-                #000000
-            );
-            background-size: 400% 400%;
-            animation: gradientShift 30s ease infinite;
+            background-color: #000000;
         }
 
         /* 光标辉光的默认样式 */
@@ -140,6 +122,56 @@
         body.dark #particleCanvas {
             opacity: 0.4;
         }
+
+        /* ============================================ */
+        /* 背景层系统 - 分层 Z-Index 架构 */
+        /* ============================================ */
+
+        /* 全局最底层：视频背景 (-10) */
+        #bgVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -10;
+            object-fit: cover;
+            filter: brightness(0.7) grayscale(1);
+        }
+
+        /* 头部专用：渐变背景 (-3) */
+        #header-gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 400px; /* 确保足够覆盖 Header 区域 */
+            z-index: -3; /* 位于粒子层之上 */
+
+            /* 灰度动态渐变 (从 Body 移到这里) */
+            background: linear-gradient(
+                45deg,
+                #222222,
+                #555555,
+                #aaaaaa,
+                #222222
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+        }
+
+        /* 深色模式下的头部渐变 */
+        body.dark #header-gradient-bg {
+            background: linear-gradient(
+                45deg,
+                #000000,
+                #222222,
+                #444444,
+                #000000
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+        }
     </style>
     
     <!-- 主题初始化脚本 -->
@@ -158,11 +190,29 @@
 
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
     <!-- ============================================ -->
+    <!-- 背景层系统：视频 + 渐变 + 粒子 -->
+    <!-- ============================================ -->
+
+    <!-- 最底层：视频背景 (z-index: -10) -->
+    <video
+      id="bgVideo"
+      src="dragonfly_1.mp4"
+      autoplay
+      muted
+      loop
+      playsinline
+      aria-hidden="true"
+    ></video>
+
+    <!-- 头部专用渐变层 (z-index: -3) -->
+    <div id="header-gradient-bg"></div>
+
+    <!-- ============================================ -->
     <!-- 动态交互效果：粒子背景 + 光标辉光 -->
     <!-- ============================================ -->
 
-    <!-- 粒子背景Canvas - 作为最底层背景 -->
-    <canvas id="particleCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
+    <!-- 粒子背景Canvas - 全局粒子层 (z-index: -5) -->
+    <canvas id="particleCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -5; pointer-events: none;"></canvas>
 
     <!-- 光标辉光效果 -->
     <div id="cursorGlow" style="position: fixed; pointer-events: none; z-index: 9999; border-radius: 50%; transition: width 0.3s ease, height 0.3s ease;"></div>
@@ -247,9 +297,9 @@
         <!-- Skills Section -->
         <section id="skills" class="mb-16">
             <h2 class="text-2xl font-bold mb-8">技能展示</h2>
-            
+
             <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                <div class="bg-white/20 dark:bg-black/30 backdrop-blur-md p-6 rounded-lg">
                     <h3 class="text-xl font-semibold mb-4">AI认知</h3>
                     <div class="space-y-3">
                         <div class="text-gray-600 dark:text-gray-300">
@@ -257,8 +307,8 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+
+                <div class="bg-white/20 dark:bg-black/30 backdrop-blur-md p-6 rounded-lg">
                     <h3 class="text-xl font-semibold mb-4">生产工具应用</h3>
                     <div class="space-y-2 text-gray-600 dark:text-gray-300">
                         <p>• chatgpt，claude，cursor等AI生成工具</p>
@@ -331,10 +381,10 @@
         <!-- Projects Section -->
         <section id="projects" class="mb-16">
             <h2 class="text-2xl font-bold mb-8">项目经验</h2>
-            
+
             <div class="grid md:grid-cols-2 gap-8">
                 <!-- 中国银行熊猫IP项目 -->
-                <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                <div class="bg-white/20 dark:bg-black/30 backdrop-blur-md p-6 rounded-lg">
                     <h3 class="text-xl font-semibold mb-3">企业网站搭建</h3>
                     <p class="text-blue-600 dark:text-blue-400 font-medium mb-2">开发者</p>
                     <p class="text-gray-600 dark:text-gray-300 mb-4">精准切入用户需求，展示企业形象内容，并提供在线咨询服务，同时传递品牌价值</p>
@@ -342,9 +392,9 @@
                         <p><strong>工具：</strong>cursor，chatgpt，claude，阿里云</p>
                     </div>
                 </div>
-                
+
                 <!-- 喜马拉雅品牌宣传项目 -->
-                <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                <div class="bg-white/20 dark:bg-black/30 backdrop-blur-md p-6 rounded-lg">
                     <h3 class="text-xl font-semibold mb-3">圣诞节礼品网站开发</h3>
                     <p class="text-blue-600 dark:text-blue-400 font-medium mb-2">项目负责人</p>
                     <p class="text-gray-600 dark:text-gray-300 mb-4">作为独立项目，切入海外用户对于圣诞节礼品需求，并结合国内加工，生产整合资源，从而吸引海外用户订单</p>
@@ -353,11 +403,12 @@
                     </div>
                 </div>
             </div>
+        </section>
         <!-- Contact Section -->
         <section id="contact" class="mb-16">
             <h2 class="text-2xl font-bold mb-8">联系方式</h2>
-            
-            <div class="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg text-center">
+
+            <div class="bg-white/20 dark:bg-black/30 backdrop-blur-md p-8 rounded-lg text-center">
                 <div class="space-y-4">
                     <div>
                         <p class="text-lg"><strong>邮箱：</strong>
@@ -373,7 +424,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-50 dark:bg-gray-800 py-8 text-center text-gray-600 dark:text-gray-300">
+    <footer class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm py-8 text-center text-gray-600 dark:text-gray-300">
         <p>&copy; 2024 {{YOUR_NAME}}. All rights reserved.</p>
     </footer>
 
