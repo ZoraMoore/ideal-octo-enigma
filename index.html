@@ -43,6 +43,99 @@
                 --accent: #60a5fa;
             }
         }
+
+        /* ============================================ */
+        /* 动态交互效果样式 */
+        /* ============================================ */
+
+        /* 动态渐变背景动画 */
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* 应用到body的动态渐变背景 */
+        body {
+            background: linear-gradient(
+                45deg,
+                #1a2a6c,
+                #b21f1f,
+                #fdbb2d,
+                #1a2a6c
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+            position: relative;
+        }
+
+        /* 深色模式下的渐变调整 */
+        body.dark {
+            background: linear-gradient(
+                45deg,
+                #0a1a3c,
+                #7a0f0f,
+                #cd9b1d,
+                #0a1a3c
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+        }
+
+        /* 光标辉光的默认样式 */
+        #cursorGlow {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(
+                circle,
+                rgba(100, 100, 255, 0.15) 0%,
+                rgba(100, 100, 255, 0.05) 40%,
+                transparent 70%
+            );
+            transform: translate(-50%, -50%);
+            mix-blend-mode: screen;
+            filter: blur(30px);
+        }
+
+        /* 光标辉光悬停状态 */
+        #cursorGlow.hover {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(
+                circle,
+                rgba(150, 100, 255, 0.35) 0%,
+                rgba(150, 100, 255, 0.15) 40%,
+                transparent 70%
+            );
+        }
+
+        /* 可交互元素在辉光悬停时的文字颜色变化 */
+        .glow-lit {
+            color: rgba(200, 150, 255, 1) !important;
+            text-shadow: 0 0 20px rgba(150, 100, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        /* 确保内容在渐变背景上可见 */
+        header, main, footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 粒子Canvas确保在最底层 */
+        #particleCanvas {
+            opacity: 0.6;
+        }
+
+        body.dark #particleCanvas {
+            opacity: 0.4;
+        }
     </style>
     
     <!-- 主题初始化脚本 -->
@@ -60,6 +153,16 @@
 </head>
 
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
+    <!-- ============================================ -->
+    <!-- 动态交互效果：粒子背景 + 光标辉光 -->
+    <!-- ============================================ -->
+
+    <!-- 粒子背景Canvas - 作为最底层背景 -->
+    <canvas id="particleCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
+
+    <!-- 光标辉光效果 -->
+    <div id="cursorGlow" style="position: fixed; pointer-events: none; z-index: 9999; border-radius: 50%; transition: width 0.3s ease, height 0.3s ease;"></div>
+
     <!-- Header & Navigation -->
     <header class="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 z-10">
         <div class="max-w-4xl mx-auto px-4 py-6">
@@ -563,6 +666,254 @@
 
         // ========== 8. 启动动画 ==========
         animate();
+
+    })();
+    </script>
+
+    <!-- ============================================ -->
+    <!-- 动态交互效果 JavaScript -->
+    <!-- ============================================ -->
+    <script>
+    (function() {
+        'use strict';
+
+        // ========================================
+        // 特性1: 动态粒子背景系统
+        // ========================================
+
+        const ParticleBackground = {
+            canvas: null,
+            ctx: null,
+            particles: [],
+            mouse: { x: null, y: null, radius: 100 },
+            config: {
+                particleCount: 150,
+                particleColor: '#ffffff',
+                lineColor: '#cccccc',
+                maxDistance: 120,
+                particleSpeed: 0.5,
+                mouseRadius: 100
+            },
+
+            init() {
+                this.canvas = document.getElementById('particleCanvas');
+                if (!this.canvas) return;
+
+                this.ctx = this.canvas.getContext('2d');
+                this.setCanvasSize();
+                this.createParticles();
+                this.setupEventListeners();
+                this.animate();
+            },
+
+            setCanvasSize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+
+            createParticles() {
+                this.particles = [];
+                for (let i = 0; i < this.config.particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * this.config.particleSpeed,
+                        vy: (Math.random() - 0.5) * this.config.particleSpeed,
+                        radius: Math.random() * 2 + 1
+                    });
+                }
+            },
+
+            setupEventListeners() {
+                window.addEventListener('resize', () => {
+                    this.setCanvasSize();
+                    this.createParticles();
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                window.addEventListener('mouseleave', () => {
+                    this.mouse.x = null;
+                    this.mouse.y = null;
+                });
+            },
+
+            drawParticles() {
+                this.ctx.fillStyle = this.config.particleColor;
+                this.particles.forEach(particle => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+            },
+
+            drawLines() {
+                this.ctx.strokeStyle = this.config.lineColor;
+                this.ctx.lineWidth = 0.5;
+
+                for (let i = 0; i < this.particles.length; i++) {
+                    for (let j = i + 1; j < this.particles.length; j++) {
+                        const dx = this.particles[i].x - this.particles[j].x;
+                        const dy = this.particles[i].y - this.particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < this.config.maxDistance) {
+                            const opacity = 1 - (distance / this.config.maxDistance);
+                            this.ctx.globalAlpha = opacity * 0.3;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
+                            this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                this.ctx.globalAlpha = 1;
+            },
+
+            updateParticles() {
+                this.particles.forEach(particle => {
+                    // 鼠标交互 - 排斥效果
+                    if (this.mouse.x !== null && this.mouse.y !== null) {
+                        const dx = particle.x - this.mouse.x;
+                        const dy = particle.y - this.mouse.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < this.config.mouseRadius) {
+                            const force = (this.config.mouseRadius - distance) / this.config.mouseRadius;
+                            const angle = Math.atan2(dy, dx);
+                            particle.vx += Math.cos(angle) * force * 0.5;
+                            particle.vy += Math.sin(angle) * force * 0.5;
+                        }
+                    }
+
+                    // 更新位置
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+
+                    // 边界检测与反弹
+                    if (particle.x < 0 || particle.x > this.canvas.width) {
+                        particle.vx *= -1;
+                        particle.x = Math.max(0, Math.min(particle.x, this.canvas.width));
+                    }
+                    if (particle.y < 0 || particle.y > this.canvas.height) {
+                        particle.vy *= -1;
+                        particle.y = Math.max(0, Math.min(particle.y, this.canvas.height));
+                    }
+
+                    // 速度阻尼（模拟摩擦力）
+                    particle.vx *= 0.99;
+                    particle.vy *= 0.99;
+
+                    // 保持最小速度
+                    if (Math.abs(particle.vx) < 0.1) particle.vx += (Math.random() - 0.5) * 0.1;
+                    if (Math.abs(particle.vy) < 0.1) particle.vy += (Math.random() - 0.5) * 0.1;
+                });
+            },
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.drawLines();
+                this.drawParticles();
+                this.updateParticles();
+
+                requestAnimationFrame(() => this.animate());
+            }
+        };
+
+        // ========================================
+        // 特性2: 交互式光标辉光系统
+        // ========================================
+
+        const CursorGlow = {
+            element: null,
+            config: {
+                interactiveSelectors: 'a, button, h2, h3, .nav-link, input, textarea',
+                defaultGlow: {
+                    width: 400,
+                    height: 400,
+                    color: 'rgba(100, 100, 255, 0.15)',
+                    blur: 30
+                },
+                hoverGlow: {
+                    width: 600,
+                    height: 600,
+                    color: 'rgba(150, 100, 255, 0.35)',
+                    blur: 40
+                }
+            },
+            currentTarget: null,
+
+            init() {
+                this.element = document.getElementById('cursorGlow');
+                if (!this.element) return;
+
+                this.setupEventListeners();
+            },
+
+            setupEventListeners() {
+                // 鼠标移动 - 更新辉光位置
+                document.addEventListener('mousemove', (e) => {
+                    this.element.style.left = e.clientX + 'px';
+                    this.element.style.top = e.clientY + 'px';
+                });
+
+                // 检测可交互元素的悬停
+                const interactiveElements = document.querySelectorAll(this.config.interactiveSelectors);
+
+                interactiveElements.forEach(elem => {
+                    elem.addEventListener('mouseenter', (e) => {
+                        this.activateHover(e.target);
+                    });
+
+                    elem.addEventListener('mouseleave', (e) => {
+                        this.deactivateHover(e.target);
+                    });
+                });
+            },
+
+            activateHover(target) {
+                // 添加辉光悬停类
+                this.element.classList.add('hover');
+
+                // 为目标元素添加"点亮"效果
+                target.classList.add('glow-lit');
+                this.currentTarget = target;
+            },
+
+            deactivateHover(target) {
+                // 移除辉光悬停类
+                this.element.classList.remove('hover');
+
+                // 移除目标元素的"点亮"效果
+                target.classList.remove('glow-lit');
+                this.currentTarget = null;
+            }
+        };
+
+        // ========================================
+        // 初始化所有特性
+        // ========================================
+
+        // 等待DOM完全加载后初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeEffects);
+        } else {
+            initializeEffects();
+        }
+
+        function initializeEffects() {
+            // 初始化粒子背景
+            ParticleBackground.init();
+
+            // 初始化光标辉光
+            CursorGlow.init();
+
+            console.log('✨ 动态交互效果已激活！');
+        }
 
     })();
     </script>
