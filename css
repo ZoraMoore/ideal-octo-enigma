@@ -187,3 +187,41 @@ body {
     background-color: var(--accent);
     color: white;
 }
+
+/* ========================================
+   粒子动画幽灵角色样式
+   ======================================== */
+
+#ghostCanvas {
+    /* 固定定位在页面左上角 */
+    position: fixed;
+    top: 20px;
+    left: 20px;
+
+    /* Canvas尺寸 */
+    width: 200px;
+    height: 240px;
+
+    /* 层级控制 - 在背景之上，但不遮挡导航 */
+    z-index: 5;
+
+    /* 不阻挡鼠标事件，允许点击穿透 */
+    pointer-events: none;
+
+    /* 平滑渲染 */
+    image-rendering: crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+/* 在移动设备上隐藏，避免遮挡内容 */
+@media (max-width: 768px) {
+    #ghostCanvas {
+        display: none;
+    }
+}
+
+/* 为暗色模式调整透明度 */
+.dark #ghostCanvas {
+    opacity: 0.95;
+}

@@ -60,6 +60,9 @@
 </head>
 
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
+    <!-- 粒子动画幽灵角色 -->
+    <canvas id="ghostCanvas"></canvas>
+
     <!-- Header & Navigation -->
     <header class="sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 z-10">
         <div class="max-w-4xl mx-auto px-4 py-6">
@@ -343,6 +346,259 @@
 
         // 初始化按钮状态
         updateButtonState();
+    </script>
+
+    <!-- 粒子动画幽灵角色 - JavaScript -->
+    <script>
+    // ========================================
+    // 粒子动画幽灵角色 - 完整实现
+    // ========================================
+
+    (function() {
+        'use strict';
+
+        // ========== 1. 初始化Canvas和上下文 ==========
+        const canvas = document.getElementById('ghostCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 设置实际渲染分辨率（高分辨率支持）
+        const dpr = window.devicePixelRatio || 1;
+        const width = 200;
+        const height = 240;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+
+        // ========== 2. 粒子类定义 ==========
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                // 随机速度，创造流动效果
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                // 随机大小
+                this.size = Math.random() * 2 + 1;
+                // 随机颜色相位，创造彩虹效果
+                this.hue = Math.random() * 60 + 180; // 蓝色到紫色范围
+                this.saturation = Math.random() * 30 + 70;
+                this.lightness = Math.random() * 20 + 50;
+                // 透明度
+                this.alpha = Math.random() * 0.5 + 0.3;
+                // 生命周期
+                this.life = Math.random() * 100 + 100;
+                this.maxLife = this.life;
+            }
+
+            // 更新粒子位置和状态
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+
+                // 根据生命周期调整透明度（渐隐效果）
+                this.alpha = (this.life / this.maxLife) * 0.6;
+
+                // 色相缓慢变化，创造极光效果
+                this.hue += 0.5;
+                if (this.hue > 300) this.hue = 180;
+            }
+
+            // 绘制粒子
+            draw() {
+                ctx.fillStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 检查粒子是否还存活
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+
+        // ========== 3. 幽灵形状路径定义 ==========
+        function getGhostPath() {
+            const path = new Path2D();
+            const centerX = width / 2;
+            const topY = 40;
+            const bodyWidth = 80;
+            const bodyHeight = 100;
+
+            // 绘制幽灵轮廓（圆顶 + 波浪底部）
+            path.arc(centerX, topY + 40, 40, Math.PI, 0, false); // 圆顶头部
+            path.lineTo(centerX + 40, topY + bodyHeight); // 右侧边
+
+            // 底部波浪效果（3个波浪）
+            for (let i = 0; i < 3; i++) {
+                const waveX = centerX + 40 - (i * 26.67);
+                const waveY = topY + bodyHeight;
+                path.quadraticCurveTo(
+                    waveX - 6.67, waveY + 10,
+                    waveX - 13.33, waveY
+                );
+            }
+
+            path.lineTo(centerX - 40, topY + 40); // 左侧边
+            path.closePath();
+
+            return path;
+        }
+
+        // ========== 4. 眼睛类定义 ==========
+        class Eye {
+            constructor(baseX, baseY) {
+                this.baseX = baseX;
+                this.baseY = baseY;
+                this.currentX = baseX;
+                this.currentY = baseY;
+                this.radius = 8; // 眼睛外圈半径
+                this.pupilRadius = 5; // 瞳孔半径
+                this.maxMove = 6; // 最大移动范围
+            }
+
+            /**
+             * 根据鼠标位置更新眼睛位置
+             * @param {number} mouseX - 鼠标X坐标
+             * @param {number} mouseY - 鼠标Y坐标
+             */
+            update(mouseX, mouseY) {
+                // 计算从眼睛基准位置到鼠标的角度和距离
+                const dx = mouseX - this.baseX;
+                const dy = mouseY - this.baseY;
+                const angle = Math.atan2(dy, dx);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                // 根据距离调整移动幅度
+                // 距离越近，移动幅度越大；距离越远，移动幅度越小
+                let moveAmount = Math.min(this.maxMove, distance * 0.05);
+
+                // 计算目标位置
+                const targetX = this.baseX + Math.cos(angle) * moveAmount;
+                const targetY = this.baseY + Math.sin(angle) * moveAmount;
+
+                // 使用线性插值实现平滑过渡（缓动效果）
+                const smoothFactor = 0.15;
+                this.currentX += (targetX - this.currentX) * smoothFactor;
+                this.currentY += (targetY - this.currentY) * smoothFactor;
+            }
+
+            // 绘制眼睛
+            draw() {
+                // 绘制眼白（可选，这里用半透明白色）
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.beginPath();
+                ctx.arc(this.baseX, this.baseY, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 绘制黑色瞳孔
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(this.currentX, this.currentY, this.pupilRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // ========== 5. 初始化变量 ==========
+        const particles = [];
+        const maxParticles = 150; // 最大粒子数量
+        const ghostPath = getGhostPath();
+
+        // 创建两只眼睛（左眼和右眼）
+        const leftEye = new Eye(width / 2 - 20, 70);
+        const rightEye = new Eye(width / 2 + 20, 70);
+
+        // 鼠标位置追踪
+        let mouseX = width / 2;
+        let mouseY = height / 2;
+
+        // 呼吸效果变量
+        let breathPhase = 0;
+
+        // ========== 6. 鼠标事件监听 ==========
+        document.addEventListener('mousemove', function(e) {
+            // 获取Canvas相对于视口的位置
+            const rect = canvas.getBoundingClientRect();
+            // 将鼠标坐标转换为Canvas内部坐标
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+
+        // ========== 7. 粒子生成函数 ==========
+        function createParticles() {
+            // 在幽灵身体范围内随机生成粒子
+            const centerX = width / 2;
+            const topY = 40;
+
+            for (let i = 0; i < 3; i++) {
+                // 在幽灵轮廓内随机生成位置
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 35;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = topY + 60 + Math.sin(angle) * radius * 0.8;
+
+                particles.push(new Particle(x, y));
+            }
+
+            // 限制粒子总数
+            while (particles.length > maxParticles) {
+                particles.shift();
+            }
+        }
+
+        // ========== 8. 主动画循环 ==========
+        function animate() {
+            // 清空画布（半透明清除，创造拖尾效果）
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(0, 0, width, height);
+
+            // ===== 绘制幽灵身体粒子效果 =====
+
+            // 呼吸效果（缓慢缩放）
+            breathPhase += 0.02;
+            const breathScale = 1 + Math.sin(breathPhase) * 0.03;
+
+            ctx.save();
+            ctx.translate(width / 2, 100);
+            ctx.scale(breathScale, breathScale);
+            ctx.translate(-width / 2, -100);
+
+            // 更新和绘制所有粒子
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+
+                // 移除死亡粒子
+                if (particles[i].isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            ctx.restore();
+
+            // 持续生成新粒子
+            createParticles();
+
+            // ===== 绘制幽灵轮廓（可选，用于调试） =====
+            // ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            // ctx.stroke(ghostPath);
+
+            // ===== 更新和绘制眼睛 =====
+            leftEye.update(mouseX, mouseY);
+            rightEye.update(mouseX, mouseY);
+
+            leftEye.draw();
+            rightEye.draw();
+
+            // 请求下一帧动画
+            requestAnimationFrame(animate);
+        }
+
+        // ========== 9. 启动动画 ==========
+        animate();
+
+    })();
     </script>
 </body>
 </html>
